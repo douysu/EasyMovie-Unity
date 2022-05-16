@@ -33,17 +33,17 @@ public class Main : MonoBehaviour
         width = 1600;
         height = 900;
         Debug.Log("VideoPlugin:" + width + ", " + height);
-        
-        // Invoke(nameof(Init), 2.0f);
-        // Invoke(nameof(Release), 22.0f);
-        if (SystemInfo.graphicsMultiThreaded)
-        {
-            GL.IssuePluginEvent(RenderThreadHandlePtr, GL_INIT_EVENT);
-        }
-        else
-        {
-            RunOnRenderThread(GL_INIT_EVENT);
-        }
+
+        nativeObject.Call("testRun");
+
+        //if (SystemInfo.graphicsMultiThreaded)
+        //{
+        //    GL.IssuePluginEvent(RenderThreadHandlePtr, GL_INIT_EVENT);
+        //}
+        //else
+        //{
+        //    RunOnRenderThread(GL_INIT_EVENT);
+        //}
     }
 
     private void OnDisable()
