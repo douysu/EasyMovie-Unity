@@ -34,8 +34,10 @@ public class Main : MonoBehaviour
         height = 900;
         Debug.Log("VideoPlugin:" + width + ", " + height);
 
-        nativeObject.Call("testRun");
-        runMessageMe();
+        nativeObject.Call("initObject");
+
+        start(0, width, height);
+
 
         if (SystemInfo.graphicsMultiThreaded)
         {
@@ -121,4 +123,7 @@ public class Main : MonoBehaviour
 
     [DllImport("application")]
     private static extern void runMessageMe();
+
+    [DllImport("application")]
+    private static extern void start(int unityTextureId, int width, int height);
 }
