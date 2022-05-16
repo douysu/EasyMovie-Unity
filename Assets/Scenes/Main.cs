@@ -35,15 +35,16 @@ public class Main : MonoBehaviour
         Debug.Log("VideoPlugin:" + width + ", " + height);
 
         nativeObject.Call("testRun");
+        runMessageMe();
 
-        //if (SystemInfo.graphicsMultiThreaded)
-        //{
-        //    GL.IssuePluginEvent(RenderThreadHandlePtr, GL_INIT_EVENT);
-        //}
-        //else
-        //{
-        //    RunOnRenderThread(GL_INIT_EVENT);
-        //}
+        if (SystemInfo.graphicsMultiThreaded)
+        {
+            GL.IssuePluginEvent(RenderThreadHandlePtr, GL_INIT_EVENT);
+        }
+        else
+        {
+            RunOnRenderThread(GL_INIT_EVENT);
+        }
     }
 
     private void OnDisable()
@@ -117,4 +118,7 @@ public class Main : MonoBehaviour
                 break;
         }
     }
+
+    [DllImport("application")]
+    private static extern void runMessageMe();
 }
