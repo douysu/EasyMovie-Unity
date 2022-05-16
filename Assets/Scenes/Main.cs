@@ -37,7 +37,8 @@ public class Main : MonoBehaviour
         nativeObject.Call("initObject");
 
         start(0, width, height);
-
+        updateTexture();
+        release();
 
         if (SystemInfo.graphicsMultiThreaded)
         {
@@ -122,8 +123,11 @@ public class Main : MonoBehaviour
     }
 
     [DllImport("application")]
-    private static extern void runMessageMe();
+    private static extern void start(int unityTextureId, int width, int height);
 
     [DllImport("application")]
-    private static extern void start(int unityTextureId, int width, int height);
+    private static extern void release();
+
+    [DllImport("application")]
+    private static extern void updateTexture();
 }
