@@ -10,12 +10,13 @@ public class Main : MonoBehaviour
 {
 
     private AndroidJavaObject nativeObject;
-    private int width, height;
+    private static int width, height;
     public MeshRenderer meshRenderer;
     private Texture2D texture;
     private delegate void RenderEventDelegate(int eventID);
     private RenderEventDelegate RenderThreadHandle;
     private IntPtr RenderThreadHandlePtr;
+    private static int texturePtr;
 
     void Awake()
     {
@@ -36,17 +37,21 @@ public class Main : MonoBehaviour
 
         nativeObject.Call("initObject");
 
-        start(0, width, height);
-        updateTexture();
-        release();
-
         if (SystemInfo.graphicsMultiThreaded)
         {
+            Debug.Log("VideoPlugin:Start");
+            texture = new Texture2D(width, height, TextureFormat.RGB24, false, false);
+            texturePtr = (int)texture.GetNativeTexturePtr();
             GL.IssuePluginEvent(RenderThreadHandlePtr, GL_INIT_EVENT);
+            meshRenderer.material.mainTexture = texture;
         }
         else
         {
+            Debug.Log("VideoPlugin:Start");
+            texture = new Texture2D(width, height, TextureFormat.RGB24, false, false);
+            texturePtr = (int)texture.GetNativeTexturePtr();
             RunOnRenderThread(GL_INIT_EVENT);
+            meshRenderer.material.mainTexture = texture;
         }
     }
 
@@ -55,10 +60,14 @@ public class Main : MonoBehaviour
         Debug.Log("OnDisable");
         if (SystemInfo.graphicsMultiThreaded)
         {
+            texture = null;
+            meshRenderer.material.mainTexture = null;
             GL.IssuePluginEvent(RenderThreadHandlePtr, GL_DESTROY_EVENT);
         }
         else
         {
+            texture = null;
+            meshRenderer.material.mainTexture = null;
             RunOnRenderThread(GL_DESTROY_EVENT);
         }
     }
@@ -68,19 +77,22 @@ public class Main : MonoBehaviour
         if (SystemInfo.graphicsMultiThreaded)
         {
             GL.IssuePluginEvent(RenderThreadHandlePtr, GL_UPDATE_EVENT);
+            GL.InvalidateState();
         }
         else
         {
             RunOnRenderThread(GL_UPDATE_EVENT);
+            GL.InvalidateState();
         }
     }
     
-    private void updateTexutre()
+    private void updateTexutreCsharp()
     {
         if (texture != null && nativeObject.Call<bool>("isUpdateFrame"))
         {
             Debug.Log("VideoPlugin:Update");
-            nativeObject.Call("updateTexture");
+            updateTexture();
+            //nativeObject.Call("updateTexture");
             GL.InvalidateState();
         }
     }
@@ -89,7 +101,8 @@ public class Main : MonoBehaviour
     {
         Debug.Log("VideoPlugin:Start");
         texture = new Texture2D(width, height, TextureFormat.RGB24, false, false);
-        nativeObject.Call("start", (int)texture.GetNativeTexturePtr(), width, height);
+        start((int)texture.GetNativeTexturePtr(), width, height);
+        // nativeObject.Call("start", (int)texture.GetNativeTexturePtr(), width, height);
         meshRenderer.material.mainTexture = texture;
     }
     
@@ -98,26 +111,26 @@ public class Main : MonoBehaviour
         Debug.Log("VideoPlugin:Release");
         texture = null;
         meshRenderer.material.mainTexture = null;
-        nativeObject.Call("release");
+        release();
+        //nativeObject.Call("release");
     }
     
     private const int GL_INIT_EVENT = 0x0001;
     private const int GL_UPDATE_EVENT = 0x0002;
     private const int GL_DESTROY_EVENT = 0x0003;
     [MonoPInvokeCallback(typeof(RenderEventDelegate))]
-    private void RunOnRenderThread(int eventID)
+    private static void RunOnRenderThread(int eventID)
     {
         switch (eventID)
         {
             case GL_INIT_EVENT:
-                createTexture(); 
+                start(texturePtr, width, height);
                 break;
             case GL_UPDATE_EVENT:
-                updateTexutre();
-                GL.InvalidateState();
+                updateTexture();
                 break;
             case GL_DESTROY_EVENT:
-                destroyTexture();
+                release();
                 break;
         }
     }
