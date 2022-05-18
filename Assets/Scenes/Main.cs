@@ -17,6 +17,7 @@ public class Main : MonoBehaviour
     private RenderEventDelegate RenderThreadHandle;
     private IntPtr RenderThreadHandlePtr;
     private static int texturePtr;
+    private static IntPtr clz_OurAppActitvityClass;
 
     void Awake()
     {
@@ -28,14 +29,25 @@ public class Main : MonoBehaviour
     void Start()
     {
         Debug.Log("OnStart");
+
+
         AndroidJavaClass jc = new AndroidJavaClass("com.unity3d.player.UnityPlayer");
         AndroidJavaObject jo = jc.GetStatic<AndroidJavaObject>("currentActivity");
         nativeObject = new AndroidJavaObject("com.pvr.videoplugin.VideoPlugin", jo);
+
         width = 1600;
         height = 900;
         Debug.Log("VideoPlugin:" + width + ", " + height);
-
         nativeObject.Call("initObject");
+
+        //IntPtr clz = AndroidJNI.FindClass("com/unity3d/player/UnityPlayer");
+        //IntPtr fid = AndroidJNI.GetStaticFieldID(clz, "currentActivity", "Landroid/app/Activity;");
+        //IntPtr obj = AndroidJNI.GetStaticObjectField(clz, fid);
+        //clz_OurAppActitvityClass = AndroidJNI.FindClass("com/pvr/videoplugin/VideoPlugin");
+        //IntPtr methodId = AndroidJNI.GetMethodID(clz_OurAppActitvityClass, "initObject", "()V");
+        //jvalue v = new jvalue();
+        //v.l = AndroidJNI.NewStringUTF("()V");
+        // AndroidJNI.CallVoidMethod(obj, methodId, new jvalue[] { v });
 
         if (SystemInfo.graphicsMultiThreaded)
         {
@@ -101,7 +113,7 @@ public class Main : MonoBehaviour
     {
         Debug.Log("VideoPlugin:Start");
         texture = new Texture2D(width, height, TextureFormat.RGB24, false, false);
-        start((int)texture.GetNativeTexturePtr(), width, height);
+        // start((int)texture.GetNativeTexturePtr(), width, height);
         // nativeObject.Call("start", (int)texture.GetNativeTexturePtr(), width, height);
         meshRenderer.material.mainTexture = texture;
     }
